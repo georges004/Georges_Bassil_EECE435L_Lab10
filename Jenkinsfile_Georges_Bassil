@@ -47,14 +47,15 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
+                stage('Security Scan') {
             steps {
                 script {
-                    // Run Bandit security scan on project code only, exclude virtualenv
-                    sh ". ${VIRTUAL_ENV}/bin/activate && bandit -r . -x ${VIRTUAL_ENV}"
+                    // Run Bandit only on our project files (ignore venv / site-packages)
+                    sh ". ${VIRTUAL_ENV}/bin/activate && bandit app.py tests/test_app.py"
                 }
             }
         }
+
 
         stage('Deploy') {
             steps {
