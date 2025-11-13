@@ -50,8 +50,8 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    // Run Bandit security scan on the whole project
-                    sh ". ${VIRTUAL_ENV}/bin/activate && bandit -r ."
+                    // Run Bandit security scan on project code only, exclude virtualenv
+                    sh ". ${VIRTUAL_ENV}/bin/activate && bandit -r . -x ${VIRTUAL_ENV}"
                 }
             }
         }
