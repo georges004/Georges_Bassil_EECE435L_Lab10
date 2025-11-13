@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    environment {
+        VIRTUAL_ENV = 'venv'
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    // Create virtual environment if it doesn't exist
+                    if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
+                        sh "python3 -m venv ${VIRTUAL_ENV}"
+                    }
+                    // Install dependencies
+                    sh ". ${VIRTUAL_ENV}/bin/activate && pip install --upgrade pip"
+                    sh ". ${VIRTUAL_ENV}/bin/activate && pip install -r requirements.txt"
+                }
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                script {
+                    sh ". ${VIRTUAL_ENV}/bin/activate && flake8 app.py"
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    // Run tests with pytest (will discover tests/test_app.py)
+                    sh ". ${VIRTUAL_ENV}/bin/activate && pytest"
+                }
+            }
+        }
+
+        stage('Coverage') {
+            steps {
+                script {
+                    // Run tests with coverage and show report in console
+                    sh ". ${VIRTUAL_ENV}/bin/activate && coverage run -m pytest"
+                    sh ". ${VIRTUAL_ENV}/bin/activate && coverage report"
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                script {
+                    // Run Bandit security scan on the whole project
+                    sh ". ${VIRTUAL_ENV}/bin/activate && bandit -r ."
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Simple dummy deployment step for the lab
+                    echo "Deploying application... (dummy local deploy step)"
+                    // Example of a real deployment command:
+                    // sh ". ${VIRTUAL_ENV}/bin/activate && python app.py"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean workspace after each build
+            cleanWs()
+        }
+    }
+}
